@@ -13,18 +13,63 @@ function switchTab(tab) {
   else stopScanner();
 }
 
-function stopScanner() {
-  if (html5QrCode) html5QrCode.stop();
+// function switchTab(tab, event) {
+//   document.querySelectorAll(".tab-content").forEach(e => e.classList.remove("active"));
+//   document.querySelectorAll(".tab-btn").forEach(e => e.classList.remove("active"));
+
+//   event.target.classList.add("active");
+//   document.getElementById(tab + "-tab").classList.add("active");
+
+//   if (tab === "scan") startScanner();
+//   else stopScanner();
+// }
+
+// function stopScanner() {
+//   if (html5QrCode) html5QrCode.stop();
+// }
+
+async function stopScanner() {
+  if (html5QrCode) {
+    await html5QrCode.stop();
+    html5QrCode.clear();
+    html5QrCode = null;
+  }
 }
 
-async function startScanner() {
-  html5QrCode = new Html5Qrcode("reader");
+// async function startScanner() {
+//   html5QrCode = new Html5Qrcode("reader");
 
-  html5QrCode.start(
-    { facingMode: "environment" },
-    { fps: 10, qrbox: 250 },
-    onScanSuccess
-  );
+//   html5QrCode.start(
+//     { facingMode: "environment" },
+//     { fps: 10, qrbox: 250 },
+//     onScanSuccess
+//   );
+// }
+
+async function startScanner() {
+  try {
+    html5QrCode = new Html5Qrcode("reader");
+
+    const cameras = await Html5Qrcode.getCameras();
+
+    if (!cameras.length) {
+      alert("Tidak ada kamera ditemukan");
+      return;
+    }
+
+    await html5QrCode.start(
+      cameras[0].id,   // pilih kamera pertama
+      {
+        fps: 10,
+        qrbox: { width: 250, height: 250 }
+      },
+      onScanSuccess
+    );
+
+  } catch (err) {
+    console.error("Camera error:", err);
+    alert("Gagal mengakses kamera: " + err.message);
+  }
 }
 
 async function onScanSuccess(token) {
