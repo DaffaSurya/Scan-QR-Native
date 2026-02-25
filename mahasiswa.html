@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Scan QR Presensi</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <!-- <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script> -->
+   <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: white;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      color: #333;
+    }
+
+    h2 {
+      color: #2d3748;
+      margin-bottom: 30px;
+      font-weight: 600;
+    }
+
+    .tab-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+      justify-content: center;
+    }
+
+    .tab-btn {
+      padding: 12px 30px;
+      font-size: 16px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      background: #e2e8f0;
+      color: #4a5568;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .tab-btn.active {
+      background: #667eea;
+      color: white;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    button {
+      padding: 12px 25px;
+      font-size: 16px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    #qrcode {
+      margin: 20px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 15px;
+      display: inline-block;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    #token {
+      margin-top: 15px;
+      padding: 12px;
+      background: #f7fafc;
+      border-radius: 8px;
+      font-weight: 500;
+      color: #2d3748;
+      word-break: break-all;
+      border: 1px solid #e2e8f0;
+    }
+
+   #reader {
+  width: 100%;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  min-height: 300px;
+  background: #f0f0f0;
+}
+
+  #reader video {
+  width: 100% !important;
+  height: auto !important;
+}
+
+    #scan-result {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 10px;
+      font-weight: 500;
+    }
+
+    .success {
+      background: #c6f6d5;
+      color: #22543d;
+      border: 1px solid #9ae6b4;
+    }
+
+    .error {
+      background: #fed7d7;
+      color: #742a2a;
+      border: 1px solid #feb2b2;
+    }
+
+    .info {
+      background: #bee3f8;
+      color: #2c5282;
+      border: 1px solid #90cdf4;
+    }
+
+    .warning {
+      background: #feebc8;
+      color: #744210;
+      border: 1px solid #fbd38d;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .retry-count {
+      font-size: 12px;
+      color: #718096;
+      margin-top: 5px;
+    }
+
+    .debug-info {
+      margin-top: 20px;
+      padding: 10px;
+      background: #2d3748;
+      color: #e2e8f0;
+      border-radius: 8px;
+      font-size: 12px;
+      text-align: left;
+      word-break: break-all;
+      max-height: 200px;
+      overflow: auto;
+    }
+
+    .cors-note {
+      background: #edf2f7;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+      font-size: 14px;
+      color: #4a5568;
+    }
+
+    .cors-note a {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .manual-token {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f7fafc;
+      border-radius: 8px;
+    }
+
+    .manual-token input {
+      padding: 10px;
+      width: 200px;
+      border: 1px solid #e2e8f0;
+      border-radius: 5px;
+      margin-right: 10px;
+    }
+
+    .camera-error {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      color: #856404;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+
+    .alternative-method {
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+
+    #camera-status {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📱 QR Presensi System</h2>
+
+    <div class="tab-buttons">
+      <button class="tab-btn active" onclick="switchTab('generate')">Generate QR</button>
+      <button class="tab-btn" onclick="switchTab('scan')">Scan QR</button>
+    </div>
+
+    <!-- Tab Generate QR -->
+    <div id="generate-tab" class="tab-content active">
+      <button onclick="buatQR()" id="generateBtn">🎫 Buat QR Session Baru</button>
+      
+      <br><br>
+      <canvas id="qrcode" width="250" height="250" style="border:1px solid #ddd; border-radius:10px; display:none;"></canvas>
+      
+      <div id="token"></div>
+      
+      <!-- Manual input fallback -->
+      <div class="manual-token">
+        <h4>Atau masukkan token manual:</h4>
+        <input type="text" id="manualToken" placeholder="Masukkan token">
+        <button onclick="generateManualQR()">Generate QR Manual</button>
+      </div>
+    </div>
+
+    <!-- Tab Scan QR -->
+    <div id="scan-tab" class="tab-content">
+      <!-- Camera Status -->
+      <div id="camera-status" class="info">
+        🔍 Memeriksa ketersediaan kamera...
+      </div>
+      
+      <!-- Camera Error Display -->
+      <div id="camera-error" class="camera-error" style="display: none;"></div>
+      
+      <!-- Alternative Method -->
+      <div id="alternative-method" class="alternative-method" style="display: none;">
+        <strong>📱 Metode Alternatif:</strong>
+        <p>Jika kamera tidak berfungsi, Anda bisa menggunakan:</p>
+        <ol style="text-align: left;">
+          <li>Upload foto QR code</li>
+          <li>Input token manual</li>
+        </ol>
+      </div>
+      
+      <!-- File Upload Option -->
+      <div style="margin: 15px 0;">
+        <button onclick="showFileUpload()" id="uploadBtn">📤 Upload Foto QR Code</button>
+        <input type="file" id="qr-file" accept="image/*" style="display: none;" onchange="scanQRFromFile(this)">
+      </div>
+      
+      <div id="reader"></div>
+      
+      <div id="scan-result"></div>
+      
+      <!-- Manual scan fallback -->
+      <div class="manual-token">
+        <h4>Atau masukkan token manual:</h4>
+        <input type="text" id="manualScanToken" placeholder="Masukkan token">
+        <button onclick="manualScan()">Submit Token</button>
+      </div>
+      
+      <!-- Debug Info -->
+      <div id="debugInfo" class="debug-info" style="display: none;">
+        <strong>Debug Information:</strong>
+        <div id="debugContent"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Ganti dengan URL Apps Script Anda
+    const API_URL = "https://script.google.com/macros/s/AKfycbwdQzFsvUnCsUe82ajxfYRhL5IDRMOTk5HNKt8fkJhxfk7fA4in59IeQdjTfh99kYeyfw/exec";
+    
+    let html5QrCode = null;
+    let scanHistory = [];
+
+    // Debug function
+    function addDebug(message) {
+      const debugDiv = document.getElementById('debugInfo');
+      const debugContent = document.getElementById('debugContent');
+      debugDiv.style.display = 'block';
+      debugContent.innerHTML += message + '<br>';
+      console.log(message);
+    }
+
+    // Check camera availability
+    async function checkCameraAvailability() {
+      const statusDiv = document.getElementById('camera-status');
+      const errorDiv = document.getElementById('camera-error');
+      const alternativeDiv = document.getElementById('alternative-method');
+      
+      statusDiv.innerHTML = '🔍 Memeriksa ketersediaan kamera...';
+      statusDiv.className = 'info';
+      
+      try {
+        // Check if browser supports media devices
+        if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+          throw new Error('Browser tidak mendukung akses kamera');
+        }
+        
+        // Request permission and check devices
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        
+        // Stop all tracks immediately
+        stream.getTracks().forEach(track => track.stop());
+        
+        // Get list of devices
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(device => device.kind === 'videoinput');
+        
+        addDebug(`Found ${videoDevices.length} video devices`);
+        
+        if (videoDevices.length === 0) {
+          throw new Error('Tidak ditemukan kamera');
+        }
+        
+        statusDiv.innerHTML = '✅ Kamera tersedia! Memulai scanner...';
+        statusDiv.className = 'success';
+        errorDiv.style.display = 'none';
+        alternativeDiv.style.display = 'none';
+        
+        return true;
+        
+      } catch (error) {
+        addDebug(`Camera error: ${error.message}`);
+        
+        statusDiv.innerHTML = '❌ Kamera tidak tersedia';
+        statusDiv.className = 'error';
+        
+        errorDiv.style.display = 'block';
+        errorDiv.innerHTML = `
+          <strong>⚠️ Kamera Tidak Terdeteksi</strong><br>
+          ${error.message}<br><br>
+          <strong>Solusi:</strong>
+          <ul style="text-align: left; margin-top: 5px;">
+            <li>Pastikan browser memiliki izin akses kamera</li>
+            <li>Coba gunakan browser Chrome atau Firefox terbaru</li>
+            <li>Periksa apakah kamera terhubung dengan benar</li>
+            <li>Gunakan metode alternatif di bawah</li>
+          </ul>
+        `;
+        
+        alternativeDiv.style.display = 'block';
+        
+        return false;
+      }
+    }
+
+    // Show file upload
+    function showFileUpload() {
+      document.getElementById('qr-file').click();
+    }
+
+    // Scan QR from uploaded file
+    async function scanQRFromFile(input) {
+      if (!input.files || !input.files[0]) {
+        return;
+      }
+      
+      const file = input.files[0];
+      showResult('⏳ Membaca QR code dari file...', 'info');
+      
+      try {
+        // Create a new Html5Qrcode instance for file scanning
+        const qrCode = new Html5Qrcode("reader");
+        
+        // Scan file
+        const decodedText = await qrCode.scanFile(file, true);
+        
+        // Process the scanned token
+        await processScan(decodedText);
+        
+      } catch (error) {
+        showResult('❌ Gagal membaca QR code: ' + error.message, 'error');
+      } finally {
+        // Clear input
+        input.value = '';
+      }
+    }
+
+    // Switch between tabs
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      
+      if (tabName === 'generate') {
+        document.getElementById('generate-tab').classList.add('active');
+        stopScanner();
+      } else {
+        document.getElementById('scan-tab').classList.add('active');
+        // Check camera before starting scanner
+        checkCameraAvailability().then(available => {
+          if (available) {
+            startScanner();
+          }
+        });
+      }
+    }
+
+    // Stop scanner
+    function stopScanner() {
+      if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+          html5QrCode = null;
+          addDebug('Scanner stopped');
+        }).catch(err => {
+          console.error('Error stopping scanner:', err);
+        });
+      }
+    }
+
+    // Start scanner with fallback options
+    async function startScanner() {
+      if (html5QrCode) {
+        await stopScanner();
+      }
+
+      const statusDiv = document.getElementById('camera-status');
+      statusDiv.innerHTML = '⏳ Mengaktifkan kamera...';
+      statusDiv.className = 'info';
+
+      html5QrCode = new Html5Qrcode("reader");
+      
+      const qrConfig = {
+        fps: 10,
+        qrbox: { width: 250, height: 250 },
+        aspectRatio: 1.0,
+        formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE ]
+      };
+
+      // Try different camera configurations
+      const cameraConfigs = [
+        { facingMode: "environment" },  // Back camera preferred
+        { facingMode: "user" },         // Front camera
+        { deviceId: { exact: "" } }      // Any camera
+      ];
+
+      let started = false;
+      
+      for (const config of cameraConfigs) {
+        if (started) break;
+        
+        try {
+          addDebug(`Trying camera config: ${JSON.stringify(config)}`);
+          
+          await html5QrCode.start(
+            config,
+            qrConfig,
+            onScanSuccess,
+            onScanError
+          );
+          
+          started = true;
+          statusDiv.innerHTML = '✅ Kamera aktif - Arahkan ke QR code';
+          statusDiv.className = 'success';
+          
+          // Determine which camera is being used
+          const cameraType = config.facingMode === 'environment' ? 'Belakang' : 
+                            config.facingMode === 'user' ? 'Depan' : 'Default';
+          addDebug(`Camera started: ${cameraType}`);
+          
+        } catch (err) {
+          addDebug(`Failed with config ${JSON.stringify(config)}: ${err.message}`);
+        }
+      }
+
+      if (!started) {
+        statusDiv.innerHTML = '❌ Gagal mengaktifkan kamera';
+        statusDiv.className = 'error';
+        
+        document.getElementById('camera-error').style.display = 'block';
+        document.getElementById('camera-error').innerHTML += '<br>Semua konfigurasi kamera gagal. Silakan gunakan metode upload file.';
+        document.getElementById('alternative-method').style.display = 'block';
+      }
+    }
+
+    // Success scan handler
+    async function onScanSuccess(decodedText, decodedResult) {
+      // Pause scanner
+      if (html5QrCode) {
+        await html5QrCode.pause();
+      }
+
+      // Show success feedback
+      const statusDiv = document.getElementById('camera-status');
+      statusDiv.innerHTML = '✅ QR Code terdeteksi! Memproses...';
+      statusDiv.className = 'success';
+
+      await processScan(decodedText);
+
+      // Resume scanner after 3 seconds
+      setTimeout(() => {
+        if (html5QrCode) {
+          html5QrCode.resume();
+          statusDiv.innerHTML = '✅ Kamera aktif - Arahkan ke QR code';
+        }
+      }, 3000);
+    }
+
+    // Scan error handler
+    function onScanError(errorMessage) {
+      // Only log serious errors
+      if (errorMessage.includes('NotFoundException')) {
+        console.debug('No QR code found');
+      } else {
+        console.debug('Scan error:', errorMessage);
+      }
+    }
+
+    // Process scan token
+    async function processScan(token) {
+      showResult('⏳ Memproses token: ' + token.substring(0, 10) + '...', 'info');
+      
+      try {
+        const response = await fetch(API_URL + '?action=scan&token=' + encodeURIComponent(token) + '&_=' + Date.now(), {
+          method: 'GET',
+          mode: 'cors',
+          cache: 'no-cache',
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+        
+        const data = await response.json();
+        
+        // Add to scan history
+        const scanRecord = {
+          token: token,
+          timestamp: new Date().toLocaleString(),
+          status: data.status,
+          message: data.message
+        };
+        
+        scanHistory.unshift(scanRecord);
+        if (scanHistory.length > 5) scanHistory.pop();
+        
+        if (data.status === 'success') {
+          showResult('✅ ' + data.message, 'success');
+          
+          // Vibrate if supported
+          if (navigator.vibrate) {
+            navigator.vibrate(200);
+          }
+        } else {
+          showResult('❌ ' + data.message, 'error');
+        }
+        
+      } catch (error) {
+        showResult('❌ Error: ' + error.message, 'error');
+        console.error('Scan error:', error);
+        addDebug(`Scan error: ${error.message}`);
+      }
+    }
+
+    // Manual scan
+    async function manualScan() {
+      const token = document.getElementById('manualScanToken').value.trim();
+      if (!token) {
+        alert('Masukkan token terlebih dahulu');
+        return;
+      }
+      
+      await processScan(token);
+    }
+
+    // Show result message
+    function showResult(message, type) {
+      const resultDiv = document.getElementById('scan-result');
+      resultDiv.innerHTML = message;
+      resultDiv.className = type;
+    }
+
+    // Generate QR function
+    async function buatQR() {
+      const generateBtn = document.getElementById('generateBtn');
+      const tokenDiv = document.getElementById('token');
+      const canvas = document.getElementById('qrcode');
+      
+      if (!canvas) {
+        console.error('Canvas element not found');
+        tokenDiv.innerHTML = '❌ Error: Canvas element tidak ditemukan';
+        return;
+      }
+      
+      generateBtn.disabled = true;
+      tokenDiv.innerHTML = '⏳ Generating QR Code... <span class="loading"></span>';
+      
+      canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+      
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        
+        const response = await fetch(API_URL + '?action=createSession&_=' + Date.now(), {
+          method: 'GET',
+          mode: 'cors',
+          cache: 'no-cache',
+          headers: {
+            'Accept': 'application/json'
+          },
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const responseText = await response.text();
+        
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (e) {
+          throw new Error('Invalid JSON response: ' + responseText.substring(0, 100));
+        }
+        
+        if (data.status === 'success') {
+          const qrText = data.token;
+          
+          tokenDiv.innerHTML = '✅ Token: <strong>' + qrText + '</strong><br>' +
+                              '<small>Valid until: ' + new Date(data.expiresAt).toLocaleString() + '</small>';
+          
+          await new Promise((resolve, reject) => {
+            QRCode.toCanvas(canvas, qrText, { 
+              width: 250,
+              margin: 2,
+              errorCorrectionLevel: 'H'
+            }, function(error) {
+              if (error) reject(error);
+              else resolve();
+            });
+          });
+
+          canvas.style.display = "block";
+          
+        } else {
+          throw new Error(data.message || 'Unknown error');
+        }
+        
+      } catch (error) {
+        console.error('Error:', error);
+        
+        if (error.name === 'AbortError') {
+          tokenDiv.innerHTML = '❌ Timeout: Server tidak merespon';
+        } else {
+          tokenDiv.innerHTML = '❌ Error: ' + error.message;
+        }
+        
+      } finally {
+        generateBtn.disabled = false;
+      }
+    }
+
+    // Generate QR from manual token
+    function generateManualQR() {
+      const token = document.getElementById('manualToken').value.trim();
+      if (!token) {
+        alert('Masukkan token terlebih dahulu');
+        return;
+      }
+      
+      const canvas = document.getElementById('qrcode');
+      const tokenDiv = document.getElementById('token');
+      
+      QRCode.toCanvas(canvas, token, { width: 250, margin: 2 })
+        .then(() => {
+          tokenDiv.innerHTML = '✅ Token: <strong>' + token + '</strong><br>' +
+                              '<small style="color:#718096;">Manual input</small>';
+          canvas.style.display = "block";
+        })
+        .catch(err => {
+          tokenDiv.innerHTML = '❌ Error: ' + err.message;
+        });
+    }
+
+    // Initialize on page load
+    window.addEventListener('load', function() {
+      console.log('Page loaded');
+      
+      // Check if we're on scan tab
+      if (document.getElementById('scan-tab').classList.contains('active')) {
+        checkCameraAvailability().then(available => {
+          if (available) {
+            startScanner();
+          }
+        });
+      }
+    });
+
+    // Clean up
+    window.addEventListener('beforeunload', function() {
+      if (html5QrCode) {
+        html5QrCode.stop().catch(err => console.error('Error stopping scanner:', err));
+      }
+    });
+  </script>
+</body>
+</html>
