@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Scan QR Presensi</title>
+
+  <!-- Library -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"></script>
+
+  <style>
+        .container {
+      max-width: 500px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      color: #333;
+    }
+
+    h2 {
+      color: #2d3748;
+      margin-bottom: 30px;
+      font-weight: 600;
+    }
+
+    .tab-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+      justify-content: center;
+    }
+
+    .tab-btn {
+      padding: 12px 30px;
+      font-size: 16px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      background: #e2e8f0;
+      color: #4a5568;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .tab-btn.active {
+      background: #667eea;
+      color: white;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    button {
+      padding: 12px 25px;
+      font-size: 16px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    #qrcode {
+      margin: 20px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 15px;
+      display: inline-block;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    #token {
+      margin-top: 15px;
+      padding: 12px;
+      background: #f7fafc;
+      border-radius: 8px;
+      font-weight: 500;
+      color: #2d3748;
+      word-break: break-all;
+      border: 1px solid #e2e8f0;
+    }
+
+   #reader {
+  width: 100%;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  min-height: 300px;
+  background: #f0f0f0;
+}
+
+  #reader video {
+  width: 100% !important;
+  height: auto !important;
+}
+
+    #scan-result {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 10px;
+      font-weight: 500;
+    }
+
+    .success {
+      background: #c6f6d5;
+      color: #22543d;
+      border: 1px solid #9ae6b4;
+    }
+
+    .error {
+      background: #fed7d7;
+      color: #742a2a;
+      border: 1px solid #feb2b2;
+    }
+
+    .info {
+      background: #bee3f8;
+      color: #2c5282;
+      border: 1px solid #90cdf4;
+    }
+
+    .warning {
+      background: #feebc8;
+      color: #744210;
+      border: 1px solid #fbd38d;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .retry-count {
+      font-size: 12px;
+      color: #718096;
+      margin-top: 5px;
+    }
+
+    .debug-info {
+      margin-top: 20px;
+      padding: 10px;
+      background: #2d3748;
+      color: #e2e8f0;
+      border-radius: 8px;
+      font-size: 12px;
+      text-align: left;
+      word-break: break-all;
+      max-height: 200px;
+      overflow: auto;
+    }
+
+    .cors-note {
+      background: #edf2f7;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+      font-size: 14px;
+      color: #4a5568;
+    }
+
+    .cors-note a {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .manual-token {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f7fafc;
+      border-radius: 8px;
+    }
+
+    .manual-token input {
+      padding: 10px;
+      width: 200px;
+      border: 1px solid #e2e8f0;
+      border-radius: 5px;
+      margin-right: 10px;
+    }
+
+    .camera-error {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      color: #856404;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+
+    .alternative-method {
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+
+    #camera-status {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+  </style>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div class="container">
+    <h2>📱 QR Presensi System</h2>
+
+    <div class="tab-buttons">
+      <button class="tab-btn active" onclick="switchTab('generate')">Generate QR</button>
+      <button class="tab-btn" onclick="switchTab('scan')">Scan QR</button>
+    </div>
+
+    <!-- TAB GENERATE -->
+    <div id="generate-tab" class="tab-content active">
+      <button onclick="buatQR()" id="generateBtn">🎫 Buat QR Session Baru</button>
+
+      <br><br>
+      <canvas id="qrcode" width="250" height="250" style="display:none;"></canvas>
+      <div id="token"></div>
+
+      <div class="manual-token">
+        <h4>Atau masukkan token manual:</h4>
+        <input type="text" id="manualToken">
+        <button onclick="generateManualQR()">Generate QR Manual</button>
+      </div>
+    </div>
+
+    <!-- TAB SCAN -->
+    <div id="scan-tab" class="tab-content">
+
+      <div id="camera-status" class="info">
+        🔍 Memeriksa kamera...
+      </div>
+
+      <div id="camera-error" class="camera-error" style="display:none;"></div>
+
+      <div>
+        <button onclick="showFileUpload()">📤 Upload Foto QR</button>
+        <input type="file" id="qr-file" accept="image/*" style="display:none;" onchange="scanQRFromFile(this)">
+      </div>
+
+      <div id="reader"></div>
+      <div id="scan-result"></div>
+
+      <div class="manual-token">
+        <input type="text" id="manualScanToken">
+        <button onclick="manualScan()">Submit Token</button>
+      </div>
+
+      <div id="debugInfo" class="debug-info" style="display:none;">
+        <div id="debugContent"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JS -->
+  <script src="script.js"></script>
+</body>
+</html>
