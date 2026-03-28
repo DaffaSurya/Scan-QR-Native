@@ -1,5 +1,4 @@
-// const API_URL = "https://script.google.com/macros/s/AKfycbyk01t2UB_A5CK2ielngnqQ4M7AOu6q16IsXcpUdYUe_gCE7Use4gcBTYZ1o_9VTMwahQ/exec";
-const API_URL = "https://script.google.com/macros/s/AKfycbwabSlZbiuSKS4DS-J7PScGf7jXNTMvBqXQne1yRbB5V8_vPLg1x7688M6VuV0g-K6tZA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbx8UiNdMJiqWxp0LzV4cvvKj8Hj1MoYYep3k5QRs3lgRamdA1r7aFL-3EnY5kpYIOB1wA/exec";
 let html5QrCode = null;
 let currentToken = null;
 
