@@ -78,6 +78,7 @@ async function processScan(token) {
 
     if (data.status === "success") {
       resultText = "✅ " + resultText;
+      startAccelerometer();
     } else {
       resultText = "❌ " + resultText;
     }
@@ -111,9 +112,10 @@ async function buatQR() {
 }
 
 
-/*  ======== START ACCELOROMETER =============   */
-
 async function startAccelerometer() {
+
+  if (sensorHandler) return; // cegah double listener
+
   // iOS permission
   if (typeof DeviceMotionEvent.requestPermission === "function") {
     try {
@@ -128,16 +130,32 @@ async function startAccelerometer() {
     }
   }
 
-  window.addEventListener("devicemotion", handleMotion);
+  document.getElementById("accel-container").style.display = "block";
 
-  // kirim tiap 5 detik (batch)
+  sensorHandler = (event) => handleMotion(event);
+  window.addEventListener("devicemotion", sensorHandler);
+
   accelInterval = setInterval(sendSensorBatch, 5000);
+
+  updateSensorState("Sensor aktif ✅");
 }
 
+
+
 function stopAccelerometer() {
-  window.removeEventListener("devicemotion", handleMotion);
-  clearInterval(accelInterval);
+  if (sensorHandler) {
+    window.removeEventListener("devicemotion", sensorHandler);
+    sensorHandler = null;
+  }
+
+  if (accelInterval) {
+    clearInterval(accelInterval);
+    accelInterval = null;
+  }
+
   sensorBuffer = [];
+
+  updateSensorState("Sensor berhenti ⛔");
 }
 
 /* ======== HANDLE SENSOR DATA ===========  */
@@ -146,33 +164,76 @@ function handleMotion(event) {
   const acc = event.accelerationIncludingGravity;
   if (!acc) return;
 
+  // ===== LOW PASS FILTER =====
+  filtered.x = alpha * filtered.x + (1 - alpha) * (acc.x || 0);
+  filtered.y = alpha * filtered.y + (1 - alpha) * (acc.y || 0);
+  filtered.z = alpha * filtered.z + (1 - alpha) * (acc.z || 0);
+
   lastAccel = {
-    x: parseFloat(acc.x || 0).toFixed(2),
-    y: parseFloat(acc.y || 0).toFixed(2),
-    z: parseFloat(acc.z || 0).toFixed(2)
+    x: parseFloat(filtered.x).toFixed(2),
+    y: parseFloat(filtered.y).toFixed(2),
+    z: parseFloat(filtered.z).toFixed(2)
   };
 
-  // tampilkan ke UI (optional)
-  const el = document.getElementById("accel-data");
-  if (el) {
-    el.innerHTML = `
-      X: ${lastAccel.x} | 
-      Y: ${lastAccel.y} | 
-      Z: ${lastAccel.z}
-    `;
-  }
+  updateAccelerometerUI(filtered.x, filtered.y, filtered.z);
 
-  // masukkan ke buffer
+  // buffer ke GAS
   if (currentToken) {
     sensorBuffer.push({
       token: currentToken,
-      user_id: "user123", // 🔥 ganti dinamis
+      user_id: "user123", // TODO: ambil dari login
       device_id: navigator.userAgent,
       x: lastAccel.x,
       y: lastAccel.y,
-      z: lastAccel.z
+      z: lastAccel.z,
+      ts: new Date().toISOString()
     });
   }
+}
+
+/* ========= update accelorometer ============== */
+
+function updateAccelerometerUI(x, y, z) {
+
+  // angka
+  const valuesEl = document.getElementById("accel-values");
+  if (valuesEl) {
+    valuesEl.innerText =
+      `X: ${x.toFixed(2)} | Y: ${y.toFixed(2)} | Z: ${z.toFixed(2)}`;
+  }
+
+  // magnitude
+  const magnitude = Math.sqrt(x*x + y*y + z*z);
+  const magEl = document.getElementById("accel-magnitude");
+
+  if (magEl) {
+    magEl.innerText = `Magnitude: ${magnitude.toFixed(2)}`;
+  }
+
+  // bar visual
+  const normalize = (val) =>
+    Math.min(Math.abs(val) / 15 * 100, 100);
+
+  setBar("bar-x", normalize(x));
+  setBar("bar-y", normalize(y));
+  setBar("bar-z", normalize(z));
+
+  // status gerakan
+  if (magnitude > 11) {
+    updateSensorState("📱 Bergerak");
+  } else {
+    updateSensorState("📍 Diam");
+  }
+}
+
+function setBar(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.style.width = value + "%";
+}
+
+function updateSensorState(text) {
+  const el = document.getElementById("sensor-state");
+  if (el) el.innerText = text;
 }
 
 /* ======== MENGIRIM DATA SENSOR KE GAS  ===========  */
@@ -193,6 +254,7 @@ async function sendSensorBatch() {
     });
 
     console.log("Sensor terkirim:", sensorBuffer.length);
+
     sensorBuffer = [];
 
   } catch (err) {
@@ -212,3 +274,91 @@ document.addEventListener("DOMContentLoaded", function () {
   }, 30000);
 });
 
+
+
+
+
+// codel lama ditaruh bawah
+
+/*  ======== START ACCELOROMETER =============   */
+
+// async function startAccelerometer() {
+//   // iOS permission
+//   if (typeof DeviceMotionEvent.requestPermission === "function") {
+//     try {
+//       const permission = await DeviceMotionEvent.requestPermission();
+//       if (permission !== "granted") {
+//         console.warn("Sensor ditolak");
+//         return;
+//       }
+//     } catch (err) {
+//       console.error(err);
+//       return;
+//     }
+//   }
+
+//   window.addEventListener("devicemotion", handleMotion);
+
+//   // kirim tiap 5 detik (batch)
+//   accelInterval = setInterval(sendSensorBatch, 5000);
+// }
+
+// function stopAccelerometer() {
+//   window.removeEventListener("devicemotion", handleMotion);
+//   clearInterval(accelInterval);
+//   sensorBuffer = [];
+// }
+
+// function handleMotion(event) {
+//   const acc = event.accelerationIncludingGravity;
+//   if (!acc) return;
+
+//   // ===== LOW PASS FILTER =====
+//   filtered.x = alpha * filtered.x + (1 - alpha) * (acc.x || 0);
+//   filtered.y = alpha * filtered.y + (1 - alpha) * (acc.y || 0);
+//   filtered.z = alpha * filtered.z + (1 - alpha) * (acc.z || 0);
+
+//   lastAccel = {
+//     x: parseFloat(filtered.x).toFixed(2),
+//     y: parseFloat(filtered.y).toFixed(2),
+//     z: parseFloat(filtered.z).toFixed(2)
+//   };
+
+//   updateAccelerometerUI(filtered.x, filtered.y, filtered.z);
+
+//   // buffer ke GAS
+//   if (currentToken) {
+//     sensorBuffer.push({
+//       token: currentToken,
+//       user_id: "user123", // TODO: ambil dari login
+//       device_id: navigator.userAgent,
+//       x: lastAccel.x,
+//       y: lastAccel.y,
+//       z: lastAccel.z,
+//       ts: new Date().toISOString()
+//     });
+//   }
+// }
+
+// async function sendSensorBatch() {
+//   if (sensorBuffer.length === 0) return;
+
+//   try {
+//     await fetch(API_URL, {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json"
+//       },
+//       body: JSON.stringify({
+//         action: "sensor",
+//         data: sensorBuffer
+//       })
+//     });
+
+//     console.log("Sensor terkirim:", sensorBuffer.length);
+//     sensorBuffer = [];
+
+//   } catch (err) {
+//     console.error("Gagal kirim sensor:", err);
+//   }
+// }
