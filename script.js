@@ -2,20 +2,15 @@ const API_URL = "https://script.google.com/macros/s/AKfycbzftCCEJ8-05briVqqOzirb
 let html5QrCode = null;
 let currentToken = null;
 
-/* ================= TAB SWITCH ================= */
-// function switchTab(tab, btn) {
-//   document.querySelectorAll(".tab-content").forEach(e => e.classList.remove("active"));   ============ >> INI CODE LAMA HAPUS JIKA CODE TERBARU TIDAK BERFUNGSI
-//   document.querySelectorAll(".tab-btn").forEach(e => e.classList.remove("active"));
+let accelInterval = null;
+let sensorBuffer = [];
+let lastAccel = { x: 0, y: 0, z: 0 };
+let sensorHandler = null;
 
-//   if (btn) btn.classList.add("active");
-//   document.getElementById(tab + "-tab").classList.add("active");
 
-//   if (tab === "scan") {
-//     startScanner();
-//   } else {
-//     stopScanner();
-//   }
-// }
+// smoothing (anti noise)
+let filtered = { x: 0, y: 0, z: 0 };
+const alpha = 0.8;
 
 function switchTab(tab, btn) {
   document.querySelectorAll(".tab-content").forEach(e => e.classList.remove("active"));
@@ -59,14 +54,7 @@ async function startScanner() {
 }
 
 async function onScanSuccess(token) {
-  // if (!html5QrCode) return;
-
-  // await html5QrCode.pause();
-  // await processScan(token);
-
-  // setTimeout(() => {
-  //   if (html5QrCode) html5QrCode.resume();
-  // }, 3000);
+ 
   if (!html5QrCode) return;
 
   currentToken = token; // 🔥 simpan token untuk sensor
@@ -81,26 +69,7 @@ async function onScanSuccess(token) {
 
 /* ================= PROCESS SCAN ================= */
 async function processScan(token) {
-  // try {
-  //   const res = await fetch(`${API_URL}?action=scan&token=${token}`);
-  //   const data = await res.json();
-
-  //   let resultText = data.message || "Tidak ada respon";              ====== >> INI CODE LAMA HAPUS JIKA CODE TERBARU TIDAK BERFUNGSI
-
-  //   if (data.expiry) {
-  //     const expiryDate = new Date(data.expiry);
-  //     if (!isNaN(expiryDate)) {
-  //       resultText += "<br>Expired: " + expiryDate.toLocaleString();
-  //     }
-  //   }
-
-  //   document.getElementById("scan-result").innerHTML = resultText;
-
-  // } catch (err) {
-  //   console.error(err);
-  //   document.getElementById("scan-result").innerHTML =
-  //     "❌ Error memproses QR";
-  // }
+ 
    try {
     const res = await fetch(`${API_URL}?action=scan&token=${token}`);
     const data = await res.json();
@@ -242,3 +211,4 @@ document.addEventListener("DOMContentLoaded", function () {
     buatQR();
   }, 30000);
 });
+

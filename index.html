@@ -281,6 +281,64 @@
       <div id="reader"></div>
       <div id="scan-result"></div>
 
+      <!-- accelorometer part -->
+
+      <!-- ACCELEROMETER UI -->
+  <div id="accel-container" style="margin-top:20px; display:none;">
+
+      <h4>📊 Sensor Aktivitas</h4>
+
+  <!-- STATUS -->
+  <div id="sensor-state" class="info">
+    Sensor: belum aktif
+    </div>
+
+  <!-- NILAI XYZ -->
+  <div id="accel-values" style="margin-top:10px;">
+    X: 0 | Y: 0 | Z: 0
+  </div>
+
+  <!-- MAGNITUDE -->
+  <div id="accel-magnitude">
+    Magnitude: 0
+  </div>
+
+  <!-- VISUAL BAR -->
+  <div class="accel-bars">
+
+    <div class="bar-item">
+      <span>X</span>
+      <div class="bar-bg">
+        <div id="bar-x" class="bar-fill"></div>
+      </div>
+    </div>
+
+    <div class="bar-item">
+      <span>Y</span>
+      <div class="bar-bg">
+        <div id="bar-y" class="bar-fill"></div>
+      </div>
+    </div>
+
+    <div class="bar-item">
+      <span>Z</span>
+      <div class="bar-bg">
+        <div id="bar-z" class="bar-fill"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CONTROL -->
+  <div style="margin-top:10px;">
+    <button onclick="startSensor()">▶️ Start Sensor</button>
+    <button onclick="stopSensor()">⛔ Stop Sensor</button>
+  </div>
+
+</div>
+
+      <!-- accelorometer part end -->
+
       <div class="manual-token">
         <input type="text" id="manualScanToken">
         <button onclick="manualScan()">Submit Token</button>

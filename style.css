@@ -57,3 +57,30 @@ body {
 .manual-token {
   margin-top: 20px;
 }
+
+/* accelorometer css */
+
+.accel-bars {
+  margin-top: 10px;
+}
+
+.bar-item {
+  margin: 8px 0;
+}
+
+.bar-bg {
+  width: 100%;
+  height: 10px;
+  background: #eee;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  width: 0%;
+  background: #667eea;
+  transition: width 0.1s ease;
+}
+
+/* accelorometer part end */
