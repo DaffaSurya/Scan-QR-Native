@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbzHuRmL7XMRDFUOoQ5rxgJCLGTRCInGePWay6-8u15lb5a0bsj9RkazKVaVUJBbT5-aYw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbz2GNP7soL1s0n65zblid2_WeqhAuFrmECPRxY5JKFT0HECdNB3IJ9WGwL2vU_mxfKyog/exec";
 let html5QrCode = null;
 let currentToken = null;
 
@@ -68,18 +68,68 @@ async function onScanSuccess(token) {
 }
 
 /* ================= PROCESS SCAN ================= */
-async function processScan(token) {
+// async function processScan(token) {
  
-   try {
-    const res = await fetch(`${API_URL}?action=scan&token=${token}`);
+//    try {
+//     const res = await fetch(`${API_URL}?action=scan&token=${token}`);
+//     const data = await res.json();
+
+//     let resultText = data.message || "Tidak ada respon";
+
+//     if (data.status === "success") {
+//       resultText = "✅ " + resultText;
+//       startAccelerometer();
+//     } else {
+//       resultText = "❌ " + resultText;
+//     }
+
+//     document.getElementById("scan-result").innerHTML = resultText;
+
+//   } catch (err) {
+//     console.error(err);
+//     document.getElementById("scan-result").innerHTML =
+//       "❌ Error memproses QR";
+//   }
+// }
+
+async function processScan(token) {    
+  try {
+
+    const res = await fetch(API_URL, {
+      method: "POST", // ✅ WAJIB POST
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        action: "scan",
+        token: token,
+        user_id: "user123", // bisa dinamis
+        device_id: navigator.userAgent,
+        location: "Surabaya"
+      })
+    });
+
     const data = await res.json();
 
     let resultText = data.message || "Tidak ada respon";
 
+    // ✅ SUCCESS
     if (data.status === "success") {
       resultText = "✅ " + resultText;
       startAccelerometer();
-    } else {
+    }
+
+    // ⚠️ EXPIRED → UPDATE QR
+    else if (data.status === "expired") {
+      resultText = "⚠️ " + resultText;
+
+      if (data.new_token) {
+        updateQRCode(data.new_token); // 🔥 update QR otomatis
+      }
+    }
+
+    // ❌ ERROR
+    else {
       resultText = "❌ " + resultText;
     }
 
@@ -90,6 +140,18 @@ async function processScan(token) {
     document.getElementById("scan-result").innerHTML =
       "❌ Error memproses QR";
   }
+}
+
+// updateQRCode jika durasi yang ditentukan telah habis
+
+function updateQRCode(token) {
+  const canvas = document.getElementById("qrcode");
+
+  QRCode.toCanvas(canvas, token, function (error) {
+    if (error) console.error(error);
+  });
+
+  document.getElementById("token").innerText = token;
 }
 
 /* ================= AUTO GENERATE QR ================= */
