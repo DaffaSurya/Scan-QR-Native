@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbzftCCEJ8-05briVqqOzirbpyy4FW4kobjIHuzI4HyJZMoql-22L_rf_qG2NkCfIISP_A/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbw0G8fU4znFJey-mFGXRRD9XN-Arqt7rOCtcxS_Lo4IGkzyfovow0vIpQdcTUhAl0oloA/exec";
 let html5QrCode = null;
 let currentToken = null;
 
