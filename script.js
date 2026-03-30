@@ -67,56 +67,102 @@ async function onScanSuccess(token) {
   }, 3000);
 }
 
-async function processScan(token) {    
-  try {
+// async function processScan(token) {    
+//   try {
 
-    const res = await fetch(API_URL, {
-      method: "POST", // ✅ WAJIB POST
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        action: "scan",
-        token: token,
-        user_id: "user123", // bisa dinamis
-        device_id: navigator.userAgent,
-        location: "Surabaya"
-      })
+//     const res = await fetch(API_URL, {
+//       method: "POST", // ✅ WAJIB POST
+//       headers: {
+//         "Content-Type": "application/json"
+//       },
+//       body: JSON.stringify({
+//         action: "scan",
+//         token: token,
+//         user_id: "user123", // bisa dinamis
+//         device_id: navigator.userAgent,
+//         location: "Surabaya"
+//       })
+//     });
+
+//     const data = await res.json();
+
+//     let resultText = data.message || "Tidak ada respon";
+
+//     // ✅ SUCCESS
+//     if (data.status === "success") {
+//       resultText = "✅ " + resultText;
+//       startAccelerometer();
+//     }
+
+//     // ⚠️ EXPIRED → UPDATE QR
+//     else if (data.status === "expired") {
+//       resultText = "⚠️ " + resultText;
+
+//       if (data.new_token) {
+//         updateQRCode(data.new_token); // 🔥 update QR otomatis
+//       }
+//     }
+
+//     // ❌ ERROR
+//     else {
+//       resultText = "❌ " + resultText;
+//     }
+
+//     document.getElementById("scan-result").innerHTML = resultText;
+
+//   } catch (err) {
+//     console.error(err);
+//     document.getElementById("scan-result").innerHTML =
+//       "❌ Error memproses QR";
+//   }
+
+//   console.log("Token:", token)  // debugging apakah token muncul
+// }
+
+async function processScan(token) {
+  try {
+    // ✅ Gunakan GET dengan query params, lebih kompatibel dengan GAS
+    const params = new URLSearchParams({
+      action: "scan",
+      token: token,
+      user_id: "user123",
+      device_id: navigator.userAgent,
+      location: "Surabaya"
     });
 
-    const data = await res.json();
+    const res = await fetch(`${API_URL}?${params.toString()}`);
+
+    const rawText = await res.text(); // baca text dulu
+    console.log("RAW scan response:", rawText); // 🔥 debug
+
+    let data;
+    try {
+      data = JSON.parse(rawText);
+    } catch {
+      throw new Error("Response bukan JSON: " + rawText.substring(0, 200));
+    }
 
     let resultText = data.message || "Tidak ada respon";
 
-    // ✅ SUCCESS
     if (data.status === "success") {
       resultText = "✅ " + resultText;
       startAccelerometer();
-    }
-
-    // ⚠️ EXPIRED → UPDATE QR
-    else if (data.status === "expired") {
+    } else if (data.status === "expired") {
       resultText = "⚠️ " + resultText;
-
-      if (data.new_token) {
-        updateQRCode(data.new_token); // 🔥 update QR otomatis
-      }
-    }
-
-    // ❌ ERROR
-    else {
+      if (data.new_token) updateQRCode(data.new_token);
+    } else {
       resultText = "❌ " + resultText;
     }
 
     document.getElementById("scan-result").innerHTML = resultText;
 
   } catch (err) {
-    console.error(err);
+    console.error("Detail error:", err.message);
     document.getElementById("scan-result").innerHTML =
-      "❌ Error memproses QR";
+      "❌ Error memproses QR: " + err.message;
   }
 
-  console.log("Token:", token)  // debugging apakah token muncul
+  console.log("Token:", token);
 }
 
 
