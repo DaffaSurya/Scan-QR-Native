@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbz2GNP7soL1s0n65zblid2_WeqhAuFrmECPRxY5JKFT0HECdNB3IJ9WGwL2vU_mxfKyog/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycby9D9vNQYIdvAPFxxryRw7xjLs3ovUIQ6ZqOhqaNpb9U6crAohpcyvVd5UolAW19LrLEw/exec";
 let html5QrCode = null;
 let currentToken = null;
 
@@ -56,7 +56,7 @@ async function startScanner() {
 async function onScanSuccess(token) {
  
   if (!html5QrCode) return;
-
+ 
   currentToken = token; // 🔥 simpan token untuk sensor
 
   await html5QrCode.pause();
@@ -66,31 +66,6 @@ async function onScanSuccess(token) {
     if (html5QrCode) html5QrCode.resume();
   }, 3000);
 }
-
-/* ================= PROCESS SCAN ================= */
-// async function processScan(token) {
- 
-//    try {
-//     const res = await fetch(`${API_URL}?action=scan&token=${token}`);
-//     const data = await res.json();
-
-//     let resultText = data.message || "Tidak ada respon";
-
-//     if (data.status === "success") {
-//       resultText = "✅ " + resultText;
-//       startAccelerometer();
-//     } else {
-//       resultText = "❌ " + resultText;
-//     }
-
-//     document.getElementById("scan-result").innerHTML = resultText;
-
-//   } catch (err) {
-//     console.error(err);
-//     document.getElementById("scan-result").innerHTML =
-//       "❌ Error memproses QR";
-//   }
-// }
 
 async function processScan(token) {    
   try {
@@ -140,12 +115,22 @@ async function processScan(token) {
     document.getElementById("scan-result").innerHTML =
       "❌ Error memproses QR";
   }
+
+  console.log("Token:", token)  // debugging apakah token muncul
 }
 
-// updateQRCode jika durasi yang ditentukan telah habis
 
 function updateQRCode(token) {
+  if (!token) {
+    console.warn("Token undefined, skip update QR");
+    return;
+  }
+
+  currentToken = token; // 🔥 penting untuk sensor
+
   const canvas = document.getElementById("qrcode");
+
+  canvas.innerHTML = "";
 
   QRCode.toCanvas(canvas, token, function (error) {
     if (error) console.error(error);
@@ -154,28 +139,50 @@ function updateQRCode(token) {
   document.getElementById("token").innerText = token;
 }
 
-/* ================= AUTO GENERATE QR ================= */
+
 async function buatQR() {
   try {
-    const res = await fetch(`${API_URL}?action=createSession`);
-    const data = await res.json();
+    console.log("Fetching URL:", `${API_URL}?action=createSession`); // cek URL
 
-    document.getElementById("token").innerHTML = data.token;
+    const res = await fetch(`${API_URL}?action=createSession`);
+
+    console.log("Status:", res.status);          // cek HTTP status (200, 302, 500?)
+    console.log("OK?:", res.ok);
+
+    const rawText = await res.text();            // baca as text dulu, JANGAN langsung .json()
+    console.log("Raw response:", rawText);       // 🔥 ini paling penting, lihat isi aslinya
+
+    let data;
+    try {
+      data = JSON.parse(rawText);               // baru parse manual
+    } catch (parseErr) {
+      throw new Error("Response bukan JSON: " + rawText.substring(0, 200));
+    }
+
+    console.log("Parsed data:", data);
+
+    if (!data?.token) {
+      throw new Error("Token tidak ada. Data: " + JSON.stringify(data));
+    }
+
+    currentToken = data.token;
+    document.getElementById("token").innerText = data.token;
 
     const canvas = document.getElementById("qrcode");
-    canvas.innerHTML = ""; // bersihkan sebelum generate ulang
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    await QRCode.toCanvas(canvas, data.token);
+    await QRCode.toCanvas(canvas, data.token, { width: 256 });
     canvas.style.display = "block";
 
   } catch (err) {
-    console.error("Gagal generate QR:", err);
+    console.error("Detail error:", err.message); // 🔥 lihat ini di console
+    document.getElementById("token").innerText = "ERROR";
+    document.getElementById("scan-result").innerHTML = "❌ " + err.message;
   }
 }
-
-
 async function startAccelerometer() {
-
+  
   if (sensorHandler) return; // cegah double listener
 
   // iOS permission
