@@ -20,19 +20,25 @@ let polylineCoords = [];
 let filtered = { x: 0, y: 0, z: 0 };
 const alpha = 0.8;
 
-function switchTab(tab) {
+function switchTab(tab, btn) {
   document.querySelectorAll(".tab-content").forEach(e => e.classList.remove("active"));
   document.querySelectorAll(".tab-btn").forEach(e => e.classList.remove("active"));
 
-  event.target.classList.add("active");
+  // ✅ support both: pakai btn jika ada, fallback ke event.target
+  var activeBtn = btn || event.target;
+  activeBtn.classList.add("active");
+
   document.getElementById(tab + "-tab").classList.add("active");
 
   if (tab === "scan") {
     startScanner();
-    startAccelerometer(); // 🔥 start sensor
+    startAccelerometer();
+  } else if (tab === "gps") {
+    stopScanner();
+    stopAccelerometer();
   } else {
     stopScanner();
-    stopAccelerometer(); // 🔥 stop sensor
+    stopAccelerometer();
   }
 }
 

@@ -389,6 +389,7 @@
     <div class="tab-buttons">
       <button class="tab-btn active" onclick="switchTab('generate')">Generate QR</button>
       <button class="tab-btn" onclick="switchTab('scan')">Scan QR</button>
+      <button class="tab-btn" onclick="switchTab('gps', this)">🗺️ GPS</button>
     </div>
 
     <!-- TAB GENERATE -->
@@ -468,21 +469,7 @@
         </div>
       </div>
 
-      <div class="manual-token">
-        <h4>Submit Token Manual:</h4>
-        <div class="input-group">
-          <input type="text" id="manualScanToken" placeholder="Paste token di sini">
-          <button onclick="manualScan()">Submit</button>
-        </div>
-      </div>
-
-      <div id="debugInfo" class="debug-info">
-        <div id="debugContent"></div>
-      </div>
-    </div>
-
-    <!-- fitur GPS UI -->
-    <div id="gps-tab" class="tab-content">
+      <div id="gps-tab" class="tab-content">
     <h4>📡 GPS Tracker</h4>
 
     <!-- Status Cards -->
@@ -516,6 +503,14 @@
       Tekan "Lihat Peta" untuk menampilkan peta
     </p>
   </div>
+
+      <div id="debugInfo" class="debug-info">
+        <div id="debugContent"></div>
+      </div>
+    </div>
+
+    <!-- fitur GPS UI -->
+    
   </div>
 </body>
 </html>
