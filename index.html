@@ -381,136 +381,109 @@
 </head>
 
 <body>
-  <div class="container">
-    <div class="header">
-      <h2>📱 QR Presensi System</h2>
+ <div class="container">
+  <div class="header">
+    <h2>📱 QR Presensi System</h2>
+  </div>
+
+  <div class="tab-buttons">
+    <button class="tab-btn active" onclick="switchTab('generate', this)">Generate QR</button>
+    <button class="tab-btn" onclick="switchTab('scan', this)">Scan QR</button>
+    <button class="tab-btn" onclick="switchTab('gps', this)">🗺️ GPS</button>
+  </div>
+
+  <!-- TAB GENERATE -->
+  <div id="generate-tab" class="tab-content active">
+    <div class="qr-display">
+      <canvas id="qrcode" width="250" height="250" style="display:none;"></canvas>
+      <div id="token">Token akan muncul di sini...</div>
     </div>
 
-    <div class="tab-buttons">
-      <button class="tab-btn active" onclick="switchTab('generate')">Generate QR</button>
-      <button class="tab-btn" onclick="switchTab('scan')">Scan QR</button>
-      <button class="tab-btn" onclick="switchTab('gps', this)">🗺️ GPS</button>
-    </div>
-
-    <!-- TAB GENERATE -->
-    <div id="generate-tab" class="tab-content active">
-      <div class="qr-display">
-        <canvas id="qrcode" width="250" height="250" style="display:none;"></canvas>
-        <div id="token">Token akan muncul di sini...</div>
-      </div>
-
-      <div class="manual-token">
-        <h4>Masukkan Token Manual:</h4>
-        <div class="input-group">
-          <input type="text" id="manualToken" placeholder="Paste token di sini">
-          <button onclick="generateManualQR()">Generate QR Manual</button>
-        </div>
+    <div class="manual-token">
+      <h4>Masukkan Token Manual:</h4>
+      <div class="input-group">
+        <input type="text" id="manualToken" placeholder="Paste token di sini">
+        <button onclick="generateManualQR()">Generate QR Manual</button>
       </div>
     </div>
+  </div>  <!-- ✅ TUTUP generate-tab -->
 
-    <!-- TAB SCAN -->
-    <div id="scan-tab" class="tab-content">
-      <div id="camera-status" class="info">
-        🔍 Memeriksa kamera...
-      </div>
+  <!-- TAB SCAN -->
+  <div id="scan-tab" class="tab-content">
+    <div id="camera-status" class="info">🔍 Memeriksa kamera...</div>
+    <div id="camera-error"></div>
 
-      <div id="camera-error"></div>
+    <div class="action-buttons">
+      <button onclick="showFileUpload()" style="flex: 1;">📤 Upload QR</button>
+    </div>
+    <input type="file" id="qr-file" accept="image/*" onchange="scanQRFromFile(this)">
 
-      <div class="action-buttons">
-        <button onclick="showFileUpload()" style="flex: 1;">📤 Upload QR</button>
-      </div>
-      <input type="file" id="qr-file" accept="image/*" onchange="scanQRFromFile(this)">
+    <div id="reader"></div>
+    <div id="scan-result"></div>
 
-      <div id="reader"></div>
-      <div id="scan-result"></div>
+    <!-- ACCELEROMETER UI -->
+    <div id="accel-container">
+      <h4>📊 Sensor Aktivitas</h4>
+      <div id="sensor-state">Sensor: belum aktif</div>
+      <div id="accel-values">X: 0 | Y: 0 | Z: 0</div>
+      <div id="accel-magnitude">Magnitude: 0</div>
 
-      <!-- ACCELEROMETER UI -->
-      <div id="accel-container">
-        <h4>📊 Sensor Aktivitas</h4>
-
-        <div id="sensor-state">
-          Sensor: belum aktif
+      <div class="accel-bars">
+        <div class="bar-item">
+          <span>X</span>
+          <div class="bar-bg"><div id="bar-x" class="bar-fill"></div></div>
         </div>
-
-        <div id="accel-values">
-          X: 0 | Y: 0 | Z: 0
+        <div class="bar-item">
+          <span>Y</span>
+          <div class="bar-bg"><div id="bar-y" class="bar-fill"></div></div>
         </div>
-
-        <div id="accel-magnitude">
-          Magnitude: 0
-        </div>
-
-        <div class="accel-bars">
-          <div class="bar-item">
-            <span>X</span>
-            <div class="bar-bg">
-              <div id="bar-x" class="bar-fill"></div>
-            </div>
-          </div>
-
-          <div class="bar-item">
-            <span>Y</span>
-            <div class="bar-bg">
-              <div id="bar-y" class="bar-fill"></div>
-            </div>
-          </div>
-
-          <div class="bar-item">
-            <span>Z</span>
-            <div class="bar-bg">
-              <div id="bar-z" class="bar-fill"></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="button-group">
-          <button onclick="startSensor()">▶️ Start Sensor</button>
-          <button onclick="stopSensor()">⛔ Stop Sensor</button>
+        <div class="bar-item">
+          <span>Z</span>
+          <div class="bar-bg"><div id="bar-z" class="bar-fill"></div></div>
         </div>
       </div>
 
-      <div id="gps-tab" class="tab-content">
+      <div class="button-group">
+        <button onclick="startSensor()">▶️ Start Sensor</button>
+        <button onclick="stopSensor()">⛔ Stop Sensor</button>
+      </div>
+    </div>  <!-- ✅ TUTUP accel-container -->
+
+    <div id="debugInfo" class="debug-info">
+      <div id="debugContent"></div>
+    </div>
+  </div>  <!-- ✅ TUTUP scan-tab -->
+
+  <!-- TAB GPS -->  <!-- ✅ SEJAJAR dengan generate-tab dan scan-tab -->
+  <div id="gps-tab" class="tab-content">
     <h4>📡 GPS Tracker</h4>
 
-    <!-- Status Cards -->
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
-      <div class="info">
-        <small style="display:block; margin-bottom:4px;">Status GPS</small>
+    <div class="gps-status-grid">
+      <div class="gps-card">
+        <small>Status GPS</small>
         <span id="gps-state">GPS belum aktif</span>
       </div>
-      <div class="info">
-        <small style="display:block; margin-bottom:4px;">Akurasi</small>
+      <div class="gps-card">
+        <small>Akurasi</small>
         <span id="gps-accuracy">-</span>
       </div>
     </div>
 
-    <!-- Koordinat -->
-    <div class="info" style="margin-bottom:14px;">
-      <small style="display:block; margin-bottom:4px;">Koordinat</small>
-      <span id="gps-coords" style="font-family: monospace;">Lat: - | Lng: -</span>
+    <div class="gps-coords-box">
+      <small>Koordinat</small>
+      <span id="gps-coords">Lat: - | Lng: -</span>
     </div>
 
-    <!-- Kontrol GPS -->
-    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;">
+    <div class="gps-controls">
       <button onclick="startGPS()">▶️ Mulai GPS</button>
       <button onclick="stopGPS()">⛔ Stop GPS</button>
       <button onclick="showMap()">🗺️ Lihat Peta</button>
     </div>
 
-    <!-- Peta Leaflet -->
-    <div id="map" style="width:100%; height:380px; border-radius:8px; display:none;"></div>
-    <p id="map-placeholder" style="text-align:center; color:gray; font-size:13px;">
-      Tekan "Lihat Peta" untuk menampilkan peta
-    </p>
-  </div>
+    <div id="map"></div>
+    <p id="map-placeholder">Tekan "Lihat Peta" untuk menampilkan peta</p>
+  </div>  <!-- ✅ TUTUP gps-tab -->
 
-      <div id="debugInfo" class="debug-info">
-        <div id="debugContent"></div>
-      </div>
-    </div>
-
-    <!-- fitur GPS UI -->
-    
-  </div>
+</div>
 </body>
 </html>
