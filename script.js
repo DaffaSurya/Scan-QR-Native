@@ -12,11 +12,11 @@ let sensorHandler = null;
 let filtered = { x: 0, y: 0, z: 0 };
 const alpha = 0.8;
 
-function switchTab(tab, btn) {
+function switchTab(tab) {
   document.querySelectorAll(".tab-content").forEach(e => e.classList.remove("active"));
   document.querySelectorAll(".tab-btn").forEach(e => e.classList.remove("active"));
 
-  if (btn) btn.classList.add("active");
+  event.target.classList.add("active");
   document.getElementById(tab + "-tab").classList.add("active");
 
   if (tab === "scan") {
@@ -186,15 +186,19 @@ async function startAccelerometer() {
       const permission = await DeviceMotionEvent.requestPermission();
       if (permission !== "granted") {
         console.warn("Sensor ditolak");
+        updateSensorState("⚠️ Sensor permission ditolak");
         return;
       }
     } catch (err) {
       console.error(err);
+      updateSensorState("⚠️ Error requesting sensor");
       return;
     }
   }
 
-  document.getElementById("accel-container").style.display = "block";
+  const container = document.getElementById("accel-container");
+  container.classList.add("show");
+  container.style.display = "block";
 
   sensorHandler = (event) => handleMotion(event);
   window.addEventListener("devicemotion", sensorHandler);
@@ -218,6 +222,10 @@ function stopAccelerometer() {
   }
 
   sensorBuffer = [];
+
+  const container = document.getElementById("accel-container");
+  container.classList.remove("show");
+  container.style.display = "none";
 
   updateSensorState("Sensor berhenti ⛔");
 }
@@ -329,6 +337,58 @@ async function sendSensorBatch() {
 
 /* ================= AUTO RUN SAAT HALAMAN LOAD ================= */
 
+function startSensor() {
+  startAccelerometer();
+}
+
+function stopSensor() {
+  stopAccelerometer();
+}
+
+function showFileUpload() {
+  document.getElementById("qr-file").click();
+}
+
+function scanQRFromFile(input) {
+  if (input.files && input.files[0]) {
+    const file = input.files[0];
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        html5QrCode.scanFile(file, true)
+          .then(qr_code => {
+            onScanSuccess(qr_code);
+          })
+          .catch(err => {
+            document.getElementById("scan-result").innerHTML = "❌ Error scanning file: " + err.message;
+          });
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+function generateManualQR() {
+  const token = document.getElementById("manualToken").value.trim();
+  if (!token) {
+    alert("Please enter a token");
+    return;
+  }
+  updateQRCode(token);
+}
+
+function manualScan() {
+  const token = document.getElementById("manualScanToken").value.trim();
+  if (!token) {
+    alert("Please enter a token");
+    return;
+  }
+  currentToken = token;
+  processScan(token);
+}
+
 document.addEventListener("DOMContentLoaded", function () {
   buatQR(); // langsung generate saat halaman dibuka
 
@@ -337,8 +397,3 @@ document.addEventListener("DOMContentLoaded", function () {
     buatQR();
   }, 30000);
 });
-
-
-
-
-
