@@ -6,7 +6,15 @@ let accelInterval = null;
 let sensorBuffer = [];
 let lastAccel = { x: 0, y: 0, z: 0 };
 let sensorHandler = null;
-
+let gpsInterval = null;
+let gpsWatchId = null;
+let currentLat = null;
+let currentLng = null;
+let currentAccuracy = null;
+let map = null;
+let marker = null;
+let polyline = null;
+let polylineCoords = [];
 
 // smoothing (anti noise)
 let filtered = { x: 0, y: 0, z: 0 };
@@ -340,5 +348,146 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
+// ===== START GPS =====
+async function startGPS() {
+  if (!navigator.geolocation) {
+    alert("Browser tidak mendukung GPS");
+    return;
+  }
 
+  updateGPSState("📡 Meminta izin GPS...");
 
+  gpsWatchId = navigator.geolocation.watchPosition(
+    (position) => {
+      currentLat = position.coords.latitude;
+      currentLng = position.coords.longitude;
+      currentAccuracy = position.coords.accuracy;
+
+      updateGPSUI(currentLat, currentLng, currentAccuracy);
+    },
+    (err) => {
+      console.error("GPS error:", err.message);
+      updateGPSState("❌ GPS error: " + err.message);
+    },
+    { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+  );
+
+  // kirim GPS ke GAS tiap 10 detik
+  gpsInterval = setInterval(sendGPS, 10000);
+
+  updateGPSState("✅ GPS aktif");
+}
+
+// ===== STOP GPS =====
+function stopGPS() {
+  if (gpsWatchId !== null) {
+    navigator.geolocation.clearWatch(gpsWatchId);
+    gpsWatchId = null;
+  }
+  if (gpsInterval) {
+    clearInterval(gpsInterval);
+    gpsInterval = null;
+  }
+  updateGPSState("⛔ GPS berhenti");
+}
+
+// ===== KIRIM GPS KE GAS =====
+async function sendGPS() {
+  if (currentLat === null || currentLng === null) return;
+
+  try {
+    const params = new URLSearchParams({
+      action: "saveGPS",
+      lat: currentLat,
+      lng: currentLng,
+      accuracy: currentAccuracy || 0,
+      user_id: "user123",
+      device_id: navigator.userAgent,
+      token: currentToken || ""
+    });
+
+    const res = await fetch(`${API_URL}?${params.toString()}`);
+    const data = await res.json();
+    console.log("GPS terkirim:", data);
+
+  } catch (err) {
+    console.error("Gagal kirim GPS:", err);
+  }
+}
+
+// ===== TAMPILKAN PETA =====
+async function showMap() {
+
+  const mapContainer = document.getElementById("map");
+  const placeholder = document.getElementById("map-placeholder");
+
+  mapContainer.style.display = "block"; // ✅ tampilkan map
+  placeholder.style.display = "none";  // ✅ sembunyikan placeholder
+
+  if (!mapContainer) return;
+
+  // init Leaflet map jika belum ada
+  if (!map) {
+    map = L.map("map").setView([-7.257472, 112.752088], 15); // default Surabaya
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "© OpenStreetMap"
+    }).addTo(map);
+  }
+
+  // ambil posisi terbaru
+  try {
+    const resLatest = await fetch(`${API_URL}?action=getLatestGPS&device_id=${encodeURIComponent(navigator.userAgent)}`);
+    const latest = await resLatest.json();
+
+    if (latest.data) {
+      const { lat, lng, accuracy } = latest.data;
+
+      // update/buat marker
+      if (marker) {
+        marker.setLatLng([lat, lng]);
+      } else {
+        marker = L.marker([lat, lng])
+          .addTo(map)
+          .bindPopup(`📍 Posisi terbaru<br>Akurasi: ${accuracy}m`)
+          .openPopup();
+      }
+
+      map.setView([lat, lng], 16);
+    }
+
+    // ambil history untuk polyline
+    const resHistory = await fetch(`${API_URL}?action=getGPSHistory&device_id=${encodeURIComponent(navigator.userAgent)}&limit=50`);
+    const history = await resHistory.json();
+
+    if (history.data && history.data.length > 1) {
+      const coords = history.data.map(p => [p.lat, p.lng]);
+
+      if (polyline) {
+        polyline.setLatLngs(coords);
+      } else {
+        polyline = L.polyline(coords, { color: "blue", weight: 3 }).addTo(map);
+      }
+
+      map.fitBounds(polyline.getBounds());
+    }
+
+  } catch (err) {
+    console.error("Gagal load peta:", err);
+  }
+}
+
+// ===== UPDATE UI GPS =====
+function updateGPSUI(lat, lng, accuracy) {
+  const el = document.getElementById("gps-coords");
+  if (el) el.innerText = `Lat: ${lat.toFixed(6)} | Lng: ${lng.toFixed(6)} | Akurasi: ${accuracy.toFixed(0)}m`;
+}
+
+function updateGPSState(text, status = "") {
+  // const el = document.getElementById("gps-state");
+  // if (el) el.innerText = text;
+  const el = document.getElementById("gps-state");
+  if (!el) return;
+  el.innerText = text;
+  el.className = status;
+}

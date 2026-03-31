@@ -84,3 +84,175 @@ body {
 }
 
 /* accelorometer part end */
+
+/* GPS Session Style */
+
+.gps-status-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.gps-card {
+  background: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.gps-card small {
+  display: block;
+  font-size: 11px;
+  color: #888;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.gps-card span {
+  font-size: 14px;
+  font-weight: 500;
+  color: #222;
+}
+
+/* Koordinat Box */
+.gps-coords-box {
+  background: #f0f4ff;
+  border: 1px solid #c7d5f8;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+}
+
+.gps-coords-box small {
+  display: block;
+  font-size: 11px;
+  color: #5566aa;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+#gps-coords {
+  font-family: monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: #2a3a8a;
+}
+
+/* Tombol Kontrol GPS */
+.gps-controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.gps-controls button {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.gps-controls button:hover {
+  background: #f0f0f0;
+}
+
+.gps-controls button:active {
+  transform: scale(0.97);
+}
+
+/* Tombol Mulai — hijau */
+.gps-controls button:nth-child(1) {
+  background: #e8f5e9;
+  border-color: #a5d6a7;
+  color: #2e7d32;
+}
+
+.gps-controls button:nth-child(1):hover {
+  background: #c8e6c9;
+}
+
+/* Tombol Stop — merah */
+.gps-controls button:nth-child(2) {
+  background: #fdecea;
+  border-color: #f5c6c2;
+  color: #b71c1c;
+}
+
+.gps-controls button:nth-child(2):hover {
+  background: #f9d5d3;
+}
+
+/* Tombol Peta — biru */
+.gps-controls button:nth-child(3) {
+  background: #e3f2fd;
+  border-color: #90caf9;
+  color: #1565c0;
+}
+
+.gps-controls button:nth-child(3):hover {
+  background: #bbdefb;
+}
+
+/* Status GPS — warna dinamis via JS */
+#gps-state {
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+#gps-state.aktif   { color: #2e7d32; }
+#gps-state.berhenti { color: #b71c1c; }
+#gps-state.loading  { color: #e65100; }
+
+/* Akurasi */
+#gps-accuracy {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+/* Map Container */
+#map {
+  width: 100%;
+  height: 380px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  overflow: hidden;
+  display: none;
+  margin-top: 4px;
+}
+
+/* Map Placeholder */
+#map-placeholder {
+  text-align: center;
+  color: #aaa;
+  font-size: 13px;
+  padding: 20px 0 8px;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 400px) {
+  .gps-status-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gps-controls {
+    flex-direction: column;
+  }
+
+  .gps-controls button {
+    width: 100%;
+    text-align: center;
+  }
+
+  #map {
+    height: 280px;
+  }
+}

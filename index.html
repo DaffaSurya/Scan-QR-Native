@@ -348,9 +348,43 @@
         <div id="debugContent"></div>
       </div>
     </div>
-  </div>
 
-  <!-- JS
-  <script src="script.js"></script> -->
+    <!-- fitur GPS UI -->
+
+      <div id="gps-tab" class="tab-content">
+    <h4>📡 GPS Tracker</h4>
+
+    <!-- Status Cards -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
+      <div class="info">
+        <small style="display:block; margin-bottom:4px;">Status GPS</small>
+        <span id="gps-state">GPS belum aktif</span>
+      </div>
+      <div class="info">
+        <small style="display:block; margin-bottom:4px;">Akurasi</small>
+        <span id="gps-accuracy">-</span>
+      </div>
+    </div>
+
+    <!-- Koordinat -->
+    <div class="info" style="margin-bottom:14px;">
+      <small style="display:block; margin-bottom:4px;">Koordinat</small>
+      <span id="gps-coords" style="font-family: monospace;">Lat: - | Lng: -</span>
+    </div>
+
+    <!-- Kontrol GPS -->
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;">
+      <button onclick="startGPS()">▶️ Mulai GPS</button>
+      <button onclick="stopGPS()">⛔ Stop GPS</button>
+      <button onclick="showMap()">🗺️ Lihat Peta</button>
+    </div>
+
+    <!-- Peta Leaflet -->
+    <div id="map" style="width:100%; height:380px; border-radius:8px; display:none;"></div>
+    <p id="map-placeholder" style="text-align:center; color:gray; font-size:13px;">
+      Tekan "Lihat Peta" untuk menampilkan peta
+    </p>
+  </div>
+  </div>
 </body>
 </html>
