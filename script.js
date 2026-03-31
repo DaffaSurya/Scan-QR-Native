@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbwJ350iSGND8ZIoTRayc88JFHGWkRfu5Hq6L9rTWIOdwcTbDu0SdUdghGhlNGvNTwdQEA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzzFLoLOftewwqk0tg-ifvJbl90_lztBYu5f8d48oWhZrSu_fnGLeJlzuaStivesnUsMA/exec";
 let html5QrCode = null;
 let currentToken = null;
 
@@ -20,11 +20,11 @@ let polylineCoords = [];
 let filtered = { x: 0, y: 0, z: 0 };
 const alpha = 0.8;
 
-function switchTab(tab, btn) {
+function switchTab(tab) {
   document.querySelectorAll(".tab-content").forEach(e => e.classList.remove("active"));
   document.querySelectorAll(".tab-btn").forEach(e => e.classList.remove("active"));
 
-  if (btn) btn.classList.add("active");
+  event.target.classList.add("active");
   document.getElementById(tab + "-tab").classList.add("active");
 
   if (tab === "scan") {
@@ -194,15 +194,19 @@ async function startAccelerometer() {
       const permission = await DeviceMotionEvent.requestPermission();
       if (permission !== "granted") {
         console.warn("Sensor ditolak");
+        updateSensorState("⚠️ Sensor permission ditolak");
         return;
       }
     } catch (err) {
       console.error(err);
+      updateSensorState("⚠️ Error requesting sensor");
       return;
     }
   }
 
-  document.getElementById("accel-container").style.display = "block";
+  const container = document.getElementById("accel-container");
+  container.classList.add("show");
+  container.style.display = "block";
 
   sensorHandler = (event) => handleMotion(event);
   window.addEventListener("devicemotion", sensorHandler);
@@ -226,6 +230,10 @@ function stopAccelerometer() {
   }
 
   sensorBuffer = [];
+
+  const container = document.getElementById("accel-container");
+  container.classList.remove("show");
+  container.style.display = "none";
 
   updateSensorState("Sensor berhenti ⛔");
 }
@@ -337,18 +345,60 @@ async function sendSensorBatch() {
 
 /* ================= AUTO RUN SAAT HALAMAN LOAD ================= */
 
-document.addEventListener("DOMContentLoaded", function () {
-  buatQR(); // langsung generate saat halaman dibuka
+function startSensor() {
+  startAccelerometer();
+}
 
-  // 🔥 jika ingin auto refresh tiap 30 detik aktifkan ini
-  setInterval(() => {
-    buatQR();
-  }, 30000);
-});
+function stopSensor() {
+  stopAccelerometer();
+}
 
+function showFileUpload() {
+  document.getElementById("qr-file").click();
+}
 
+function scanQRFromFile(input) {
+  if (input.files && input.files[0]) {
+    const file = input.files[0];
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        html5QrCode.scanFile(file, true)
+          .then(qr_code => {
+            onScanSuccess(qr_code);
+          })
+          .catch(err => {
+            document.getElementById("scan-result").innerHTML = "❌ Error scanning file: " + err.message;
+          });
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+}
 
-// ===== START GPS =====
+function generateManualQR() {
+  const token = document.getElementById("manualToken").value.trim();
+  if (!token) {
+    alert("Please enter a token");
+    return;
+  }
+  updateQRCode(token);
+}
+
+function manualScan() {
+  const token = document.getElementById("manualScanToken").value.trim();
+  if (!token) {
+    alert("Please enter a token");
+    return;
+  }
+  currentToken = token;
+  processScan(token);
+}
+
+// Start GPS script
+
 async function startGPS() {
   if (!navigator.geolocation) {
     alert("Browser tidak mendukung GPS");
@@ -417,13 +467,11 @@ async function sendGPS() {
 
 // ===== TAMPILKAN PETA =====
 async function showMap() {
-
   const mapContainer = document.getElementById("map");
   const placeholder = document.getElementById("map-placeholder");
 
   mapContainer.style.display = "block"; // ✅ tampilkan map
   placeholder.style.display = "none";  // ✅ sembunyikan placeholder
-
   if (!mapContainer) return;
 
   // init Leaflet map jika belum ada
@@ -483,11 +531,25 @@ function updateGPSUI(lat, lng, accuracy) {
   if (el) el.innerText = `Lat: ${lat.toFixed(6)} | Lng: ${lng.toFixed(6)} | Akurasi: ${accuracy.toFixed(0)}m`;
 }
 
-function updateGPSState(text, status = "") {
+function updateGPSState(text) {
   // const el = document.getElementById("gps-state");
   // if (el) el.innerText = text;
   const el = document.getElementById("gps-state");
   if (!el) return;
   el.innerText = text;
-  el.className = status;
+  el.className = status; 
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+  buatQR(); // langsung generate saat halaman dibuka
+
+  // 🔥 jika ingin auto refresh tiap 30 detik aktifkan ini
+  setInterval(() => {
+    buatQR();
+  }, 30000);
+});
+
+
+
+
+
