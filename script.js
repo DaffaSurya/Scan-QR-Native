@@ -84,7 +84,6 @@ async function onScanSuccess(token) {
 
 async function processScan(token) {
   try {
-    // ✅ Gunakan GET dengan query params, lebih kompatibel dengan GAS
     const params = new URLSearchParams({
       action: "scan",
       token: token,
@@ -476,18 +475,31 @@ async function showMap() {
   const mapContainer = document.getElementById("map");
   const placeholder = document.getElementById("map-placeholder");
 
-  mapContainer.style.display = "block"; // ✅ tampilkan map
-  placeholder.style.display = "none";  // ✅ sembunyikan placeholder
-  if (!mapContainer) return;
+  // ✅ Cek dulu sebelum dipakai
+  if (!mapContainer) {
+    console.error("Elemen #map tidak ditemukan");
+    return;
+  }
 
-  // init Leaflet map jika belum ada
+  
+  if (placeholder) placeholder.style.display = 'none';
+  mapContainer.style.display = 'block'
+
+  if (typeof L === 'undefined') {
+  console.error('leaflet belum dimuat');
+  return;
+  }
+
+
   if (!map) {
-    map = L.map("map").setView([-7.257472, 112.752088], 15); // default Surabaya
+    map = L.map("map").setView([-7.257472, 112.752088], 15);     // ✅ init Leaflet map jika belum ada
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "© OpenStreetMap"
     }).addTo(map);
+    setTimeout(() => map.invalidateSize(), 100);
   }
+  
 
   // ambil posisi terbaru
   try {
@@ -497,7 +509,6 @@ async function showMap() {
     if (latest.data) {
       const { lat, lng, accuracy } = latest.data;
 
-      // update/buat marker
       if (marker) {
         marker.setLatLng([lat, lng]);
       } else {

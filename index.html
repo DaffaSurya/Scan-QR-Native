@@ -8,6 +8,7 @@
   <!-- Library -->
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="script.js"></script>
   
   <style>
@@ -444,8 +445,8 @@
       </div>
 
       <div class="button-group">
-        <button onclick="startSensor()">▶️ Start Sensor</button>
-        <button onclick="stopSensor()">⛔ Stop Sensor</button>
+        <!-- <button onclick="startSensor()">▶️ Start Sensor</button>
+        <button onclick="stopSensor()">⛔ Stop Sensor</button> -->
       </div>
     </div>  <!-- ✅ TUTUP accel-container -->
 
@@ -483,7 +484,6 @@
     <div id="map"></div>
     <p id="map-placeholder">Tekan "Lihat Peta" untuk menampilkan peta</p>
   </div>  <!-- ✅ TUTUP gps-tab -->
-
 </div>
 </body>
 </html>
