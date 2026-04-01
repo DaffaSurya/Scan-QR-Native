@@ -1,3 +1,9 @@
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
 body {
   font-family: 'Segoe UI', Arial;
   text-align: center;
@@ -17,56 +23,226 @@ body {
   color: #333;
 }
 
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px 16px;
+      text-align: center;
+    }
+
+    .header h2 {
+      font-size: 24px;
+      font-weight: 700;
+      margin: 0;
+    }
+
 .tab-buttons {
   display: flex;
   gap: 10px;
   justify-content: center;
   margin-bottom: 30px;
+        padding: 10px;
+      background: #f5f5f5;
+      border-bottom: 1px solid #e0e0e0;
 }
 
 .tab-btn {
+  flex: 1;
   padding: 12px 30px;
   border: none;
   border-radius: 10px;
   cursor: pointer;
+        color: #666;
+      transition: all 0.3s ease;
 }
 
 .tab-btn.active {
   background: #667eea;
   color: white;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
 }
 
 .tab-content {
   display: none;
+        overflow-y: auto;
+      padding: 16px;
 }
 
 .tab-content.active {
   display: block;
 }
 
+    /* SCAN TAB */
+
 #reader {
   width: 100%;
   min-height: 300px;
   background: #f0f0f0;
+        border-radius: 16px;
+      overflow: hidden;
+      margin: 12px 0;
+      aspect-ratio: 1 / 1.2;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-.success { background: #c6f6d5; padding:10px; }
-.error { background: #fed7d7; padding:10px; }
-.info { background: #bee3f8; padding:10px; }
+    #reader video {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    #camera-status {
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-bottom: 8px;
+      background: #e3f2fd;
+      color: #1565c0;
+      border: 1px solid #90caf9;
+      text-align: center;
+    }
+
+    #scan-result {
+      margin: 12px 0;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      text-align: center;
+    }
+
+.success { background: #c6f6d5; padding:10px; color: #2e7d32; border: 1px solid #81c784;}
+.error { background: #fed7d7; padding:10px; color: #c62828; border: 1px solid #ef9a9a;}
+.info { background: #bee3f8; padding:10px; color: #1565c0; border: 1px solid #90caf9;}
+
+    /* GENERATE TAB */
+    .qr-display {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      margin: 20px 0;
+    }
+
+    #qrcode {
+      padding: 16px;
+      background: white;
+      border-radius: 16px;
+      border: 2px solid #e0e0e0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    #token {
+      width: 100%;
+      padding: 12px;
+      background: #f5f5f5;
+      border-radius: 12px;
+      font-size: 12px;
+      color: #666;
+      word-break: break-all;
+      border: 1px solid #e0e0e0;
+      text-align: center;
+    }
 
 .manual-token {
   margin-top: 20px;
+  padding: 16px;
+      background: #f9f9f9;
+      border-radius: 12px;
+      border: 1px solid #e0e0e0;
 }
+
+    .manual-token input {
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 14px;
+      width: 100%;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 8px;
+      flex-direction: column;
+    }
+
+      .manual-token h4 {
+      font-size: 14px;
+      margin-bottom: 12px;
+      color: #333;
+    }
 
 /* accelorometer css */
 
+    #accel-container {
+      background: #f9f9f9;
+      border-radius: 16px;
+      padding: 16px;
+      margin-top: 12px;
+      border: 1px solid #e0e0e0;
+      display: none !important;
+    }
+
+    #accel-container.show {
+      display: block !important;
+    }
+
+    #accel-container h4 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #333;
+    }
+
+    #sensor-state {
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      background: #e3f2fd;
+      color: #1565c0;
+      border: 1px solid #90caf9;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    #accel-values {
+      padding: 12px;
+      background: white;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-bottom: 8px;
+      border: 1px solid #e0e0e0;
+      font-weight: 500;
+      text-align: center;
+    }
+
+    #accel-magnitude {
+      padding: 10px;
+      background: white;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-bottom: 12px;
+      border: 1px solid #e0e0e0;
+      font-weight: 500;
+      text-align: center;
+    }
+
 .accel-bars {
   margin-top: 10px;
+  margin-bottom: 16px;
 }
 
 .bar-item {
   margin: 8px 0;
 }
+
+    .bar-item span {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #666;
+      margin-bottom: 6px;
+    }
 
 .bar-bg {
   width: 100%;
@@ -74,6 +250,7 @@ body {
   background: #eee;
   border-radius: 5px;
   overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .bar-fill {
@@ -82,6 +259,74 @@ body {
   background: #667eea;
   transition: width 0.1s ease;
 }
+
+    .button-group {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    button {
+      padding: 12px 16px;
+      font-size: 14px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      flex: 1;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .action-buttons button {
+      flex: 1;
+    }
+
+     input[type="file"] {
+      display: none;
+    }
+
+    .debug-info {
+      margin-top: 12px;
+      padding: 10px;
+      background: #2d3748;
+      color: #e2e8f0;
+      border-radius: 8px;
+      font-size: 11px;
+      text-align: left;
+      word-break: break-all;
+      max-height: 150px;
+      overflow: auto;
+      display: none;
+    }
+
+    .camera-error {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      color: #856404;
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      font-size: 13px;
+      display: none;
+    }
 
 /* accelorometer part end */
 
@@ -200,6 +445,20 @@ body {
   background: #bbdefb;
 }
 
+    /* Scrollbar styling */
+    .tab-content::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .tab-content::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .tab-content::-webkit-scrollbar-thumb {
+      background: #ccc;
+      border-radius: 3px;
+    }
+
 /* Status GPS — warna dinamis via JS */
 #gps-state {
   font-size: 14px;
@@ -256,3 +515,9 @@ body {
     height: 280px;
   }
 }
+
+    @media (max-height: 600px) {
+      #reader {
+        aspect-ratio: 1 / 0.8;
+      }
+    }
